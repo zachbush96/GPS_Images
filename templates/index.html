@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>GPS Image Gallery</title>
+		<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+		<style>
+			.image-grid {
+					display: grid;
+					
+					/*grid-template-columns: 1fr; /* Single column layout */
+					gap: 16px;
+					overflow-x: auto;
+			}
+			.image-card {
+					display: flex; /* Use flexbox for horizontal layout */
+					align-items: center; /* Align items vertically */
+					gap: 16px; /* Space between items */
+					border: 1px solid #ccc;
+					padding: 8px;
+					overflow-x: auto; /* Allow horizontal scrolling if content overflows */
+					overflow-y: auto;
+				/*scrollable on the X axis*/
+					white-space: nowrap; /* Prevent text from wrapping */
+					width: 100%;
+					/*Max height of the image card */
+					max-height: 190px;
+					
+			}
+			.image-card img {
+					/* Style for the image */
+					max-width: 100px; /* Limit the width of the image */
+					max-height: 100px; /* Limit the height of the image */
+					border-radius: 5px; /* Rounded corners */
+					box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+
+			}
+			.image-card p {
+					/* Style for the caption */
+					margin-top: 8px; /* Add some space between image and caption */
+					text-align: center; /* Center the caption */
+					/*smaller text; */
+					font-size: 12px; /* Adjust the font size as needed */
+			}
+			
+			#DeleteLocation {
+				/* Rounded corners, red, ceneterd text, black text; */
+				border-radius: 5px;
+				background-color: red;
+				text-align: center;
+				color: black;
+				padding: 3px;
+				/*Font Bold and Centered */
+				font-weight: bold;
+				margin-left: auto;
+				margin-right: auto;
+				display: block;
+				cursor: pointer;
+
+			}
+			#UpdateName {
+				/* Rounded corners, blue, ceneterd text, black text; */
+				border-radius: 5px;
+				background-color: blue;
+				text-align: center;
+				color: black;
+				padding: 3px;
+				/*Font Bold and Centered */
+				font-weight: bold;
+				margin-left: auto;
+				margin-right: auto;
+				display: block;
+				cursor: pointer;
+			}
+			/* Add spacing below all h4 elements */
+			h4 {
+				margin-bottom: 16px;
+			}
+			a {
+				/* Rounded corners, blue, ceneterd text, black text; */
+				border-radius: 5px;
+				background-color: blue;
+				text-align: center;
+				color: black;
+				padding: 3px;
+				/*Font Bold and Centered */
+				font-weight: bold;
+				margin-left: auto;
+				margin-right: auto;
+				display: block;
+				
+				cursor: pointer;
+				/*Add space above button */
+				margin-top: 16px;
+			}
+			.howToUse {
+				margin-top: 16px;
+			}
+			/* add spacing to the ID pullImageDiv */
+			#pullImageDiv {
+				margin-top: 16px;
+				margin-bottom: 16px;
+				padding: 16px;
+			}
+
+			#addLocationForm {
+				margin-top: 16px;
+				margin-bottom: 16px;
+				padding: 16px;
+			}
+			#loadingBar {
+				
+				width: 100%;
+				transition: width 10s;
+
+			}
+		</style>
+</head>
+<body class="bg-gray-100">
+		<div class="container mx-auto px-4 py-8">
+				<h1 class="text-2xl font-bold mb-6">GPS Images over multiple dates</h1>
+				<div class="grid grid-cols-3 gap-8">
+						<div class="col-span-2">
+								<div id="imageGallery" class="image-grid">
+										<!-- Images will be loaded here dynamically -->
+								</div>
+						</div>
+						<div class="col-span-1">
+								<div class="bg-white p-6 shadow rounded">
+										<h2 class="text-xl font-semibold mb-4">Add Location</h2>
+										<form id="addLocationForm">
+												<div class="mb-4">
+														<label for="locationNickname" class="block text-sm font-medium text-gray-700">Location nickname:</label>
+														<input type="text" id="locationNickname" name="locationNickname" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+												</div>
+												<div class="mb-6">
+														<label for="gpsCoords" class="block text-sm font-medium text-gray-700">GPS Coords:</label>
+														<!-- Tool tip with a link to https://apps.sentinel-hub.com/requests-builder/-->
+														<div>
+															<a href="https://apps.sentinel-hub.com/requests-builder/" target="_blank" class="text-white-500">How to get GPS Coordinates</a>
+														</div>
+														<input type="text" id="gpsCoords" name="gpsCoords" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+												</div>
+												<button type="submit" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Submit</button>
+										</form>
+
+								</div>
+								<!--
+								<div>
+									<a href="/upload" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Upload Image</a>
+								</div>
+							-->
+								<div id="addLocationForm" class="border-2 border-gray-300 rounder shadow">
+									<!-- Input field for a user to input their bearer token -->
+									<form id="addLocationForm">
+										<div class="mb-4">
+											<!-- <label for="bearerToken" class="block text-lg font-medium text-gray-700">Bearer Token</label> -->
+											<!-- Tool tip for finding bearer token-->
+											<div>
+												<a href="https://apps.sentinel-hub.com/requests-builder/" target="_blank" class="text-white-500 ">How to get Bearer Token</a>
+											</div>
+											<input type="text" value="{{generatedBearerToken}}" id="bearerToken" name="bearerToken" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+
+										</div>
+									</form>
+									<a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline space-y-40" onclick=PullImages()>Pull Live Images</a>
+									<!-- Fake Loading Bar that just slowly loads over 10 seconds-->
+									<div class="w-full h-4 bg-gray-200 rounded mt-2">
+										<div id="loadingBar" class="h-full bg-blue-500 rounded"></div>
+									</div>
+								</div>
+								<div>
+									<!-- Button on-click send GET request to /pull_live_images -->
+									<!--<a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline space-y-40" onclick=PullImages()>Pull Live Images</a> -->
+								</div>
+								<!-- A div with a green border with rounded corners, and a shadow -->
+								<!-- div class="border-2 border-green-300 rounded shadow" --> 
+								<div id="pullImageDiv" class="border-2 border-gray-300 rounder shadow">
+									<!-- Form to update the nickname of a specific location -->
+									<!-- Form should have a dropdown field of all locatiosn, and a field for the user to input the new name, and a SAVE button -->
+									<form id="updateLocationForm">
+										<div class="mb-4">
+											<label for="locationNickname" class="block text-sm font-medium text-gray-700">Location nickname:</label>
+											<!-- Dropdown list of all location nicknames-->
+											<select id="locationNicknameDropdown" name="locationNickname" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+												<option value="location1">Default Location</option>
+										</div>
+										<div class="mb-6">
+											<label for="newLocationNickname" class="block text-sm font-medium text-gray-700">New Location Nickname:</label>
+											<input type="text" id="newLocationNickname" name="newLocationNickname" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+										</div>
+										<button type="submit" onclick=update_name() class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Save</button>
+										
+								</div>
+
+								<!-- Text are that explains how to use the webpage. What a location nickname is, how GPS coordinates should be formatted, how often images are loaded, etc. -->
+								<div id="howToUse" class="bg-white p-6 shadow rounded">
+									<p>
+										<h1>
+											How to Use:
+											Fill out 'Add Location form, then click submit. This add's a location to the database. An image will be pulled from the satalites every 24hrs and appended to the database and the list shown on the left.
+											To Manually add an image, click the 'Upload Image' button and upload an image. The image will be appended to the database. Make sure the Nickname matches the nickname of the location.
+										</h1>
+									</p>
+								</div>
+							<div id="backup_button_div">
+								<!-- Button to initiate a backup by sending a GET request to /backup -->
+								<a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onclick=Backup()>
+									BACKUP
+								</a>
+
+							</div>
+						</div>
+
+				</div>
+		</div>
+	
+
+
+		<script>
+				document.getElementById('addLocationForm').addEventListener('submit', function(event) {
+					event.preventDefault();
+					const locationNickname = document.getElementById('locationNickname').value;
+					const gpsCoords = document.getElementById('gpsCoords').value;
+
+					fetch('/add_location', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ locationNickname, gpsCoords }),
+					})
+					.then(response => response.json())
+					.then(data => {
+						if (data.status === "success") {
+							console.log('Location added:', data);
+							loadImages(); // Reload images to include new location
+						} else {
+							alert(data.error); // Display error message in alert
+						}
+					})
+					.catch(error => console.error('Error adding location:', error));
+				});
+
+				function loadImages() {
+						try {
+							fetch('/locations')
+								.then(response => response.json())
+								.then(locations => {
+									
+									//Update the dropdown list of locations
+									//Get the dropdown list
+									const dropdown = document.getElementById('locationNicknameDropdown');
+									//Clear the dropdown list
+									dropdown.innerHTML = '';
+									//For each location in the locations array, add a new option to the dropdown list
+									locations.forEach(location => {
+										const option = document.createElement('option');
+										option.value = location.nickname;
+										option.innerText = location.nickname;
+										dropdown.appendChild(option);
+									});
+									//Update the image gallery
+									console.log("Hit /locations");
+									const gallery = document.getElementById('imageGallery');
+									gallery.innerHTML = ''; // Clear existing images
+									locations.forEach(location => {
+										const section = document.createElement('div');
+										section.className = 'image-card';
+										section.innerHTML = `<div id="nickandcoords"><h3 id="location_nickname" class="font-bold text-lg text-gray-900 dark:text-white">${location.nickname}</h3><h4 class="text-xs text-gray-900 dark:text-white">(${location.gpsCoords})</h4> <a id="DeleteLocation" href="/delete_location/${location.nickname}">Delete</a></div>`;
+
+										location.images.forEach(image => {
+											const inner_div = document.createElement('div');
+											inner_div.id = `image-${image.date}`;
+
+											const caption = document.createElement('p');
+											const img = document.createElement('img');
+											const delete_button = document.createElement('a');
+											img.src = image.location; //File path
+											img.alt = `${image.date}`;
+											caption.innerText = img.alt;
+											delete_button.innerText = "Delete";
+											delete_button.onclick = function() {
+												console.log("Delete Button Clicked for: " + image.location);
+												let image_file_name = image.location;
+												console.log(image_file_name);
+												//Send filename in the request body
+												fetch('/delete_image', {
+													method: 'POST',
+													headers: {
+														'Content-Type': 'application/json',
+													},
+													body: JSON.stringify({ "image_file_name":image_file_name }),
+												})
+												.then(response => response.json())
+												.then(data => {
+													if (data.status === "success") {
+														console.log('Image deleted:', data);
+														loadImages(); // Reload images to include new location nickname
+													} else {
+														alert(data.error); // Display error message in alert
+													}
+												})
+											};
+											inner_div.appendChild(img);
+											inner_div.appendChild(caption);
+											inner_div.appendChild(delete_button);
+											section.appendChild(inner_div);
+										});
+										gallery.appendChild(section);
+									});
+								})
+								.catch(error => {
+									console.error('Error loading images:', error);
+									alert('An error occurred while loading images.');
+								});
+						} catch (error) {
+							console.error('Error loading images:', error);
+							alert('An error occurred while loading images.');
+						}
+				}
+
+				loadImages(); // Initial load of images
+		
+				function PullImages() {
+					//Set the progress bar to be visible using CSS
+
+
+			
+					
+					
+					
+					
+					const bearerToken = document.getElementById('bearerToken').value;
+					try {
+						fetch('/pull_live_images', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': `Bearer ${bearerToken}`
+							},
+						})
+						.then(response => response.json())
+						.then(data => {
+							console.log("Response Data Status: (should be success?): "+data.status)
+							if (data.status === "success") {
+								console.log('Images Pulled:', data);
+								loadImages(); // Reload images to include new location
+							} else {
+								console.log("This? "+data.message + " "+data.status + " "+data.error)
+								alert(data.message); // Display error message in alert
+							}
+						})
+						.catch(error => console.error('Error pulling images:', error));
+					} catch (error) {
+						console.error('Error pulling images:', error);
+						alert('An error occurred while pulling images.');
+					}
+				}
+				
+				function update_name() {
+					console.log("Update Name Clicked");
+					const locationNickname = document.getElementById('locationNicknameDropdown').value;
+					const newLocationNickname = document.getElementById('newLocationNickname').value;
+					console.log(locationNickname);
+					console.log(newLocationNickname);
+
+						fetch('/rename_location', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json',
+							},
+							body: JSON.stringify({ "old_nickname":locationNickname, "new_nickname":newLocationNickname }),
+						})
+						.then(response => response.json())
+						.then(data => {
+							if (data.status === "success") {
+								console.log('Location updated:', data);
+								loadImages(); // Reload images to include new location nickname
+							} else {
+								alert(data.error); // Display error message in alert
+							}
+						})
+						.catch(error => console.error('Error updating location:', error));
+					};
+				
+					
+				//Function to fill in the dropdown list of locations
+
+			
+			
+		
+		
+		</script>
+</body>
+</html>
