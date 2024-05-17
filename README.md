@@ -40,6 +40,9 @@ Client_ID = "your_client_id"
 Client_Secret = "your_client_secret"
 ```
 
+## Finding Sentinel Hub credentials
+Visit https://apps.sentinel-hub.com/dashboard/#/account/settings create an OAuth client and copy the `Client ID` and `Client Secret`.
+
 ## Running the Application
 
 To start the Flask application, run:\
