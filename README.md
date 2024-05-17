@@ -1,5 +1,5 @@
 # Location Image Manager
-
+LIVE: https://gpsimage.replit.app/
 This Flask application allows you to manage locations and their corresponding images. The app provides functionalities to add, rename, delete locations, upload images, pull live images from Sentinel Hub, and perform backups.
 
 ## Features
