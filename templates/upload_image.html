@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Upload Images for GPS Locations</title>
+		<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+		<style>
+				.form-input {
+						border: 1px solid #ccc;
+						padding: 8px;
+						width: 100%;
+						margin-top: 8px;
+						border-radius: 5px;
+				}
+				.form-label {
+						font-size: 16px;
+						color: #333;
+				}
+			a {
+				/*Center the element */
+				margin-left: 25%;
+				margin-right: 25%;
+				display: block;
+				/*Rounded corners, blue, ceneterd text, black text; */
+				border-radius: 5px;
+				
+				text-align: center;
+				color: black;
+				padding: 3px;
+				/*Font Bold and Centered */
+				font-weight: bold;
+				
+			}
+		</style>
+</head>
+<body class="bg-gray-100">
+		<div class="container mx-auto px-4 py-8">
+				<h1 class="text-2xl font-bold mb-6">Upload Image for a Location</h1>
+				<div class="max-w-md mx-auto bg-white p-8 border border-gray-300">
+						<form id="uploadImageForm" enctype="multipart/form-data">
+								<div class="mb-4">
+										<label for="nickName" class="form-label">Location Nickname</label>
+										<input type="text" id="nickName" name="nick_name" class="form-input" required>
+								</div>
+								<div class="mb-4">
+										<label for="imageFile" class="form-label">Select Image</label>
+										<input type="file" id="imageFile" name="image" class="form-input" required>
+								</div>
+								<button type="submit" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Upload Image</button>
+						</form>
+				</div>
+
+				
+			<div>
+				<!-- Contains button to go back to the main page -->
+				<a href="/">
+					<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Go Home</button>
+				</a>
+				<!-- Button on-click send GET request to /pull_live_images -->
+				
+					
+			</div>
+		</div>
+
+		<script>
+			
+			document.getElementById('uploadImageForm').addEventListener('submit', function(event) {
+						event.preventDefault();
+						const formData = new FormData(this);
+
+						fetch('/upload_image', {
+								method: 'POST',
+								body: formData
+						})
+						.then(response => response.json())
+						.then(data => {
+								console.log('Image uploaded:', data);
+								alert('Image uploaded successfully!');
+								// Optionally reset the form or redirect
+								this.reset();
+						})
+						.catch(error => {
+								console.error('Error uploading image:', error);
+								alert('Failed to upload image.');
+						});
+				});
+		</script>
+</body>
+</html>
